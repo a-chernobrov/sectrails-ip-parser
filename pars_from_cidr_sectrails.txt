@@ -1,0 +1,56 @@
+// Парсим из таблицы все адреса где sites > 0
+
+// Используем IIFE (анонимную функцию), чтобы избежать переопределения переменных
+(function() {
+  // Находим таблицу в модальном окне
+  const table = document.querySelector("#dialog-container .ui-table");
+  if (!table) {
+    console.error("Таблица не найдена! Откройте модальное окно сначала.");
+    return;
+  }
+
+  // Получаем все строки таблицы
+  const rows = table.querySelectorAll("tbody tr");
+  if (rows.length === 0) {
+    console.warn("Нет данных в таблице");
+    return;
+  }
+
+  // Создаем CSV-заголовок
+  let csvContent = "IP,Sites\n";
+
+  // Фильтруем строки, где Sites > 0
+  Array.from(rows).forEach(row => {
+    const cells = row.querySelectorAll("td");
+    const ip = cells[0]?.textContent?.trim() || "";
+    const sites = parseInt(cells[1]?.textContent?.trim()) || 0;
+
+    if (sites > 0) {
+      csvContent += `"${ip.replace(/"/g, '""')}","${sites}"\n`;
+    }
+  });
+
+  // Если нет подходящих данных
+  if (csvContent === "IP,Sites\n") {
+    console.log("Нет IP с Sites > 0");
+    return;
+  }
+
+  // Скачиваем CSV
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "filtered_ips.csv";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+
+  console.log("Файл filtered_ips.csv скачан!");
+})();
+
+
+
+
+
